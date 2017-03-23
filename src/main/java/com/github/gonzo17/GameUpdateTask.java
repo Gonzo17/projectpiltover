@@ -1,4 +1,4 @@
-package de.gonzo;
+package com.github.gonzo17;
 
 import net.rithms.riot.api.ApiConfig;
 import net.rithms.riot.api.RiotApi;
@@ -18,7 +18,7 @@ public class GameUpdateTask {
 
     private static final Logger log = LoggerFactory.getLogger(GameUpdateTask.class);
 
-    private ApiConfig config = new ApiConfig().setKey("API-KEY");
+    private ApiConfig config = new ApiConfig().setKey("RGAPI-2A9F2703-382F-4B71-9FCE-28C22B2B354E");
     private RiotApi api = new RiotApi(config);
 
     @Autowired

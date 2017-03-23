@@ -1,4 +1,4 @@
-package de.gonzo;
+package com.github.gonzo17;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
