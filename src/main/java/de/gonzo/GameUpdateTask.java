@@ -18,7 +18,7 @@ public class GameUpdateTask {
 
     private static final Logger log = LoggerFactory.getLogger(GameUpdateTask.class);
 
-    private ApiConfig config = new ApiConfig().setKey("c1869abb-f2fc-4e10-a883-84b316d79339");
+    private ApiConfig config = new ApiConfig().setKey("API-KEY");
     private RiotApi api = new RiotApi(config);
 
     @Autowired
