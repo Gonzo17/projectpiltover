@@ -10,19 +10,31 @@ import net.rithms.riot.constant.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 @Component
 public class GameUpdateTask {
 
     private static final Logger log = LoggerFactory.getLogger(GameUpdateTask.class);
 
-    private ApiConfig config = new ApiConfig().setKey("RGAPI-2A9F2703-382F-4B71-9FCE-28C22B2B354E");
-    private RiotApi api = new RiotApi(config);
-
     @Autowired
     private GameRepository repository;
+
+    @Value("${riot.api.key}")
+    private String apiKey;
+
+    private ApiConfig config;
+    private RiotApi api;
+
+    @PostConstruct
+    public void init() {
+        config = new ApiConfig().setKey(apiKey);
+        api = new RiotApi(config);
+    }
 
     @Scheduled(fixedDelay = 10000)
     public void updateRecentMatches() throws RiotApiException {
