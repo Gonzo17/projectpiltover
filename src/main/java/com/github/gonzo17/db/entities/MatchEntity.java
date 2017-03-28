@@ -1,4 +1,4 @@
-package com.github.gonzo17;
+package com.github.gonzo17.db.entities;
 
 import lombok.*;
 
@@ -9,8 +9,9 @@ import javax.persistence.Id;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Entity
-public class GameEntity {
+public class MatchEntity {
 
     private int championId;
     private long createDate;
