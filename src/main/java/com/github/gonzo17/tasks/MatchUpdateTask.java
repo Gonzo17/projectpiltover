@@ -1,6 +1,6 @@
 package com.github.gonzo17.tasks;
 
-import com.github.gonzo17.logic.MatchLogic;
+import com.github.gonzo17.logic.ProjectPiltoverLogic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +15,11 @@ public class MatchUpdateTask {
     private static final Logger log = LoggerFactory.getLogger(MatchUpdateTask.class);
 
     @Autowired
-    private MatchLogic matchLogic;
+    private ProjectPiltoverLogic logic;
 
     @Scheduled(fixedDelay = 10000)
     public void updateRecentMatches() {
-        List<Long> summoners = matchLogic.getSummonerIdsToUpdate();
-        matchLogic.updateMatchesForSummoner(summoners);
+        List<Long> summoners = logic.getSummonerIdsToUpdate();
+        logic.updateMatchesForSummoner(summoners);
     }
 }

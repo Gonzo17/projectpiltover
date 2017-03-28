@@ -18,14 +18,6 @@ public class MatchDbFacadeImpl implements MatchDbFacade {
     public void saveMatch(MatchEntity gameEntity) {
         repository.save(gameEntity);
         log.info("Match with id " + gameEntity.getGameId() + " saved.");
-
-        // show all matches for debug purposes
-        log.info("All matches saved:");
-        log.info("-------------------------------");
-        for (MatchEntity match : repository.findAll()) {
-            log.info(match.toString());
-        }
-        log.info("");
     }
 
 }
