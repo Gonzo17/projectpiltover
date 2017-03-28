@@ -4,11 +4,9 @@ import com.github.gonzo17.logic.ProjectPiltoverLogic;
 import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,7 +29,7 @@ public class DiscordWebhookTask {
         for (Long summonerId : logic.getSummonerIdsToUpdate()) {
             String messageToPost = logic.checkForCurrentGame(summonerId);
             if (StringUtils.isEmpty(messageToPost)) {
-                return;
+                continue;
             }
 
             JsonObject jsonObject = new JsonObject();
