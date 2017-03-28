@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.rithms.riot.api.RiotApiException.DATA_NOT_FOUND;
+
 @Component
 public class ProjectPiltoverLogic {
 
@@ -69,7 +71,7 @@ public class ProjectPiltoverLogic {
 
     // TODO save summoners in db and get them from db here
     public List<Long> getSummonerIdsToUpdate() {
-        return Stream.of("GonzoRocks").map(this::convertSummonerNameToId).collect(Collectors.toList());
+        return Stream.of("GonzoRocks", "TheRealGoblin").map(this::convertSummonerNameToId).collect(Collectors.toList());
     }
 
 
@@ -102,7 +104,9 @@ public class ProjectPiltoverLogic {
             String championName = getChampionName(championId);
             return summonerName + " is playing " + championName + " in " + gameMode + ".";
         } catch (RiotApiException e) {
-            e.printStackTrace();
+            if (e.getErrorCode() != DATA_NOT_FOUND) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
