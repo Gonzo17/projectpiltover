@@ -32,6 +32,14 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <name>jcenter-bintray</name>
+            <url>http://jcenter.bintray.com</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Spring -->
         <dependency>
@@ -64,6 +72,12 @@
             <version>${riot-api-java.version}</version>
         </dependency>
 
+        <!-- Discord -->
+        <dependency>
+            <groupId>net.dv8tion</groupId>
+            <artifactId>JDA</artifactId>
+            <version>3.0.0_165</version>
+        </dependency>
 
         <!-- Utils -->
         <dependency>
