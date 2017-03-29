@@ -20,6 +20,8 @@ public class MatchUpdateTask {
     @Scheduled(fixedDelay = 10000)
     public void updateRecentMatches() {
         List<Long> summoners = logic.getSummonerIdsToUpdate();
-        logic.updateMatchesForSummoner(summoners);
+        for (Long summonerId : summoners) {
+            logic.updateMatchesForSummoner(summonerId);
+        }
     }
 }

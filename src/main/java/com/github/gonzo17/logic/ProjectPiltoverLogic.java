@@ -2,7 +2,8 @@ package com.github.gonzo17.logic;
 
 
 import com.github.gonzo17.db.MatchDbFacade;
-import com.github.gonzo17.db.entities.MatchEntity;
+import com.github.gonzo17.db.entities.match.MatchEntity;
+import com.github.gonzo17.mapper.MatchMapper;
 import net.rithms.riot.api.ApiConfig;
 import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
@@ -10,6 +11,7 @@ import net.rithms.riot.api.endpoints.current_game.dto.CurrentGameInfo;
 import net.rithms.riot.api.endpoints.current_game.dto.CurrentGameParticipant;
 import net.rithms.riot.api.endpoints.game.dto.Game;
 import net.rithms.riot.api.endpoints.game.dto.RecentGames;
+import net.rithms.riot.api.endpoints.match.dto.MatchDetail;
 import net.rithms.riot.constant.PlatformId;
 import net.rithms.riot.constant.Region;
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ public class ProjectPiltoverLogic {
 
     @Autowired
     private MatchDbFacade dbFacade;
+    @Autowired
+    private MatchMapper matchMapper;
 
     @Value("${riot.api.key}")
     private String apiKey;
@@ -45,27 +49,20 @@ public class ProjectPiltoverLogic {
         api = new RiotApi(config);
     }
 
-    public void updateMatchesForSummoner(List<Long> summoners) {
-        for (Long summonerId : summoners) {
-            try {
-                RecentGames recentGames = api.getRecentGames(Region.EUW, summonerId);
-
-                for (Game game : recentGames.getGames()) {
-                    MatchEntity gameEntity =
-                            MatchEntity.builder()
-                                    .championId(game.getChampionId())
-                                    .createDate(game.getCreateDate())
-                                    .gameId(game.getGameId())
-                                    .gameMode(game.getGameMode())
-                                    .gameType(game.getGameType()).build();
-
-                    dbFacade.saveMatch(gameEntity);
+    public void updateMatchesForSummoner(Long summonerId) {
+        try {
+            RecentGames recentGames = api.getRecentGames(Region.EUW, summonerId);
+            for (Game game : recentGames.getGames()) {
+                long matchId = game.getGameId();
+                if (dbFacade.hasMatchWithId(matchId)) {
+                    continue;
                 }
-
-
-            } catch (RiotApiException e) {
-                e.printStackTrace();
+                MatchDetail matchDetail = api.getMatch(Region.EUW, matchId);
+                MatchEntity matchEntity = matchMapper.mapMatchDetailToMatchEntity(matchDetail);
+                dbFacade.saveMatch(matchEntity);
             }
+        } catch (RiotApiException e) {
+            e.printStackTrace();
         }
     }
 
