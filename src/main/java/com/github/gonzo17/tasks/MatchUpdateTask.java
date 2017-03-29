@@ -17,7 +17,7 @@ public class MatchUpdateTask {
     @Autowired
     private ProjectPiltoverLogic logic;
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 100000, initialDelay = 60000)
     public void updateRecentMatches() {
         List<Long> summoners = logic.getSummonerIdsToUpdate();
         for (Long summonerId : summoners) {

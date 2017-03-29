@@ -1,5 +1,6 @@
 package com.github.gonzo17.mapper;
 
+import com.github.gonzo17.db.SummonerDbFacade;
 import com.github.gonzo17.db.entities.match.MatchEntity;
 import com.github.gonzo17.db.entities.match.summoner.*;
 import com.github.gonzo17.db.entities.match.team.BannedChampionEntity;
@@ -9,6 +10,7 @@ import com.github.gonzo17.db.entities.match.timeline.FrameEntity;
 import com.github.gonzo17.db.entities.match.timeline.ParticipantFrameEntity;
 import com.github.gonzo17.db.entities.match.timeline.TimelineEntity;
 import net.rithms.riot.api.endpoints.match.dto.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,6 +21,9 @@ import static java.util.Collections.emptyList;
 
 @Component
 public class MatchMapper {
+
+    @Autowired
+    private SummonerDbFacade summonerDbFacade;
 
     public MatchEntity mapMatchDetailToMatchEntity(MatchDetail matchDetail) {
         return MatchEntity.builder()
@@ -191,11 +196,16 @@ public class MatchMapper {
                 .build();
     }
 
-    private SummonerIdentity toEntity(Player player) {
+    private SummonerIdentityEntity toEntity(Player player) {
         if (player == null) {
             return null;
         }
-        return SummonerIdentity.builder()
+
+        if(summonerDbFacade.exists(player.getSummonerId())){
+            return summonerDbFacade.getSummonerById(player.getSummonerId());
+        }
+
+        return SummonerIdentityEntity.builder()
                 .summonerId(player.getSummonerId())
                 .summonerName(player.getSummonerName())
                 .matchHistoryUri(player.getMatchHistoryUri())

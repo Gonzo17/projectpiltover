@@ -2,13 +2,16 @@ package com.github.gonzo17.logic;
 
 
 import com.github.gonzo17.db.MatchDbFacade;
+import com.github.gonzo17.db.SummonerDbFacade;
+import com.github.gonzo17.db.entities.match.MatchEntity;
+import com.github.gonzo17.db.entities.match.summoner.SummonerIdentityEntity;
 import com.github.gonzo17.discord.MessageListener;
+import com.github.gonzo17.mapper.MatchMapper;
+import com.github.gonzo17.mapper.SummonerMapper;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
-import com.github.gonzo17.db.entities.match.MatchEntity;
-import com.github.gonzo17.mapper.MatchMapper;
 import net.rithms.riot.api.ApiConfig;
 import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
@@ -17,6 +20,7 @@ import net.rithms.riot.api.endpoints.current_game.dto.CurrentGameParticipant;
 import net.rithms.riot.api.endpoints.game.dto.Game;
 import net.rithms.riot.api.endpoints.game.dto.RecentGames;
 import net.rithms.riot.api.endpoints.match.dto.MatchDetail;
+import net.rithms.riot.api.endpoints.summoner.dto.Summoner;
 import net.rithms.riot.constant.PlatformId;
 import net.rithms.riot.constant.Region;
 import org.slf4j.Logger;
@@ -28,7 +32,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.rithms.riot.api.RiotApiException.DATA_NOT_FOUND;
@@ -39,9 +42,14 @@ public class ProjectPiltoverLogic {
     private static final Logger log = LoggerFactory.getLogger(ProjectPiltoverLogic.class);
 
     @Autowired
-    private MatchDbFacade dbFacade;
+    private MatchDbFacade matchDbFacade;
+    @Autowired
+    private SummonerDbFacade summonerDbFacade;
+
     @Autowired
     private MatchMapper matchMapper;
+    @Autowired
+    private SummonerMapper summonerMapper;
 
     @Value("${riot.api.key}")
     private String apiKey;
@@ -73,41 +81,20 @@ public class ProjectPiltoverLogic {
             RecentGames recentGames = api.getRecentGames(Region.EUW, summonerId);
             for (Game game : recentGames.getGames()) {
                 long matchId = game.getGameId();
-                if (dbFacade.hasMatchWithId(matchId)) {
+                if (matchDbFacade.hasMatchWithId(matchId)) {
                     continue;
                 }
                 MatchDetail matchDetail = api.getMatch(Region.EUW, matchId);
                 MatchEntity matchEntity = matchMapper.mapMatchDetailToMatchEntity(matchDetail);
-                dbFacade.saveMatch(matchEntity);
+                matchDbFacade.saveMatch(matchEntity);
             }
         } catch (RiotApiException e) {
             e.printStackTrace();
         }
     }
 
-    // TODO save summoners in db and get them from db here
-    public List<Long> getSummonerIdsToUpdate() {
-        return Stream.of("GonzoRocks", "TheRealGoblin").map(this::convertSummonerNameToId).collect(Collectors.toList());
-    }
-
-
-    // TODO can probably be removed if we save summoner information in our own db
-    private long convertSummonerNameToId(String summoner) {
-        try {
-            return api.getSummonerByName(Region.EUW, summoner).getId();
-        } catch (RiotApiException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     private String convertSummonerIdToName(Long summoner) {
-        try {
-            return api.getSummonerById(Region.EUW, summoner).getName();
-        } catch (RiotApiException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return summonerDbFacade.getSummonerById(summoner).getSummonerName();
     }
 
     public String checkForCurrentGame(Long summonerId) {
@@ -134,5 +121,32 @@ public class ProjectPiltoverLogic {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void initializeSummoners() {
+        Stream.of("GonzoRocks", "TheRealGoblin").forEach(this::initializeSummoner);
+    }
+
+    public void initializeSummoner(String summonerName) {
+        if (summonerDbFacade.exists(summonerName)) {
+            return;
+        }
+
+        try {
+            Summoner summoner = api.getSummonerByName(Region.EUW, summonerName);
+            SummonerIdentityEntity summonerIdentityEntity = summonerMapper.mapSummonerToEntity(summoner);
+            summonerIdentityEntity.setWatch(true);
+            summonerDbFacade.save(summonerIdentityEntity);
+        } catch (RiotApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateSummonerInformation() {
+        // TODO check on revision date whether or not we should update
+    }
+
+    public List<Long> getSummonerIdsToUpdate() {
+        return summonerDbFacade.getSummonersIdsToWatch();
     }
 }

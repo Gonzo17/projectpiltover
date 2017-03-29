@@ -19,6 +19,6 @@ public class ParticipantIdentityEntity {
     private long id;
 
     private int participantId;
-    @OneToOne(targetEntity = SummonerIdentity.class)
-    private SummonerIdentity player;
+    @OneToOne(targetEntity = SummonerIdentityEntity.class, cascade = CascadeType.ALL)
+    private SummonerIdentityEntity player;
 }

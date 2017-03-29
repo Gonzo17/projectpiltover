@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MatchDbFacadeImpl implements MatchDbFacade {
 
-    private static final Logger log = LoggerFactory.getLogger(MatchDbFacade.class);
+    private static final Logger log = LoggerFactory.getLogger(MatchDbFacadeImpl.class);
 
     @Autowired
     private MatchRepository repository;
