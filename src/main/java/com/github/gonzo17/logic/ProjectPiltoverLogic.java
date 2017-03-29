@@ -2,7 +2,6 @@ package com.github.gonzo17.logic;
 
 
 import com.github.gonzo17.db.MatchDbFacade;
-import com.github.gonzo17.db.entities.MatchEntity;
 import com.github.gonzo17.discord.MessageListener;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
