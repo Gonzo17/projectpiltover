@@ -2,6 +2,12 @@ package com.github.gonzo17.logic;
 
 
 import com.github.gonzo17.db.MatchDbFacade;
+import com.github.gonzo17.db.entities.MatchEntity;
+import com.github.gonzo17.discord.MessageListener;
+import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import com.github.gonzo17.db.entities.match.MatchEntity;
 import com.github.gonzo17.mapper.MatchMapper;
 import net.rithms.riot.api.ApiConfig;
@@ -21,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.security.auth.login.LoginException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,13 +47,26 @@ public class ProjectPiltoverLogic {
     @Value("${riot.api.key}")
     private String apiKey;
 
+    @Value("${discord.app.bot.token}")
+    private String discordAppBotToken;
+
     private ApiConfig config;
     private RiotApi api;
+    private JDA jda;
 
     @PostConstruct
     public void init() {
         config = new ApiConfig().setKey(apiKey);
         api = new RiotApi(config);
+        try {
+            jda = new JDABuilder(AccountType.BOT).setToken(discordAppBotToken).addListener(new MessageListener(api)).buildBlocking();
+        } catch (LoginException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (RateLimitedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateMatchesForSummoner(Long summonerId) {
