@@ -1,65 +1,50 @@
 package com.github.gonzo17.discord;
 
-import net.dv8tion.jda.core.entities.*;
+import com.github.gonzo17.discord.MessageCommands.KeyPhraseCheck;
+import com.github.gonzo17.discord.MessageCommands.MessageCommand;
+import com.github.gonzo17.discord.MessageCommands.SimpleTextCommand;
+import com.github.gonzo17.discord.MessageCommands.SummonerCommand;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.rithms.riot.api.RiotApi;
-import net.rithms.riot.api.RiotApiException;
-import net.rithms.riot.api.endpoints.league.dto.League;
-import net.rithms.riot.api.endpoints.league.dto.LeagueEntry;
-import net.rithms.riot.api.endpoints.summoner.dto.Summoner;
-import net.rithms.riot.constant.Region;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MessageListener extends ListenerAdapter {
 
     private RiotApi api;
+    private List<MessageCommand> messageCommands;
 
     public MessageListener(RiotApi api) {
         this.api = api;
+        initMessageCommands();
+    }
+
+    private void initMessageCommands() {
+        messageCommands = new ArrayList<>();
+
+        messageCommands.add(new SimpleTextCommand("!ping", KeyPhraseCheck.EQUALS, "!pong"));
+        messageCommands.add(new SimpleTextCommand("!goblin", KeyPhraseCheck.EQUALS, "Manuel, member of g3ck0 ..."));
+        messageCommands.add(new SummonerCommand("!rank",
+                KeyPhraseCheck.STARTS_WITH,
+                "$summonerName is currently ranked in $summonerLeague $summonerDivision with $summonerLeaguePoints LP and a Win/Loss-Ratio of $summonerWinLossRatio",
+                api));
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        Message message = event.getMessage();           //The message that was received.
-        MessageChannel channel = event.getChannel();    //This is the MessageChannel that the message was sent to.
-        Guild guild = event.getGuild();                 //The Guild that this message was sent in. (note, in the API, Guilds are Servers)
-        TextChannel textChannel = event.getChannel();   //The TextChannel that this message was sent to.
-        Member member = event.getMember();              //Member that sent the message. Contains Guild specific information about the User!
-        String name = member.getEffectiveName();        //This will either use the Member's nickname if they have one, otherwise it will default to their username. (User#getName())
+        Message message = event.getMessage();
+        MessageChannel channel = event.getChannel();
 
-        System.out.printf("(%s)[%s]<%s>: %s\n", guild.getName(), textChannel.getName(), name, message.getContent());
-
-        // If you did message.equals() it will fail because you would be comparing a Message to a String!
-        if (message.getContent().equals("!ping")) {
-            channel.sendMessage("pong!").queue();
-        }
-
-        if (message.getContent().startsWith("!rank")) {
-            String summonerName = message.getContent().substring("!rank".length()).trim();
-            String summonerLeague = "";
-            String summonerDivision = "";
-            String summonerLeaguePoints = "";
-            String summonerWinLossRatio = "";
-
-            try {
-                Summoner summoner = api.getSummonerByName(Region.EUW, summonerName);
-                League league = api.getLeagueEntryBySummoner(Region.EUW, summoner.getId()).get(0);
-
-                summonerLeague = league.getTier();
-                LeagueEntry entry = league.getEntries().get(0);
-                summonerDivision = entry.getDivision();
-                summonerLeaguePoints = String.valueOf(entry.getLeaguePoints());
-
-                double amountOfGames = entry.getLosses() + entry.getWins();
-                double percentage = Math.round(entry.getWins() * 100 / amountOfGames);
-                summonerWinLossRatio = String.valueOf(entry.getWins()) + "/" + String.valueOf(entry.getLosses()) + " (" + percentage + "%)";
-
-            } catch (RiotApiException e) {
-                e.printStackTrace();
+        for (MessageCommand cmd : messageCommands) {
+            if (cmd.checkKeyPhraseTriggered(message)) {
+                cmd.execute(channel);
             }
-
-            channel.sendMessage(summonerName + " is currently ranked in " + summonerLeague + " " + summonerDivision + " with " + summonerLeaguePoints + "LP and a Win/Loss-Ratio of " + summonerWinLossRatio).queue();
         }
 
+        System.out.printf("(%s)[%s]<%s>: %s\n", event.getGuild().getName(), event.getChannel().getName(), event.getMember().getEffectiveName(), message.getContent());
     }
 }
