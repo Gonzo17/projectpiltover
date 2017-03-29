@@ -21,6 +21,7 @@
 
         <riot-api-java.version>3.9.0</riot-api-java.version>
         <junit.version>4.12</junit.version>
+        <JDA.version>3.0.0_165</JDA.version>
     </properties>
 
     <build>
@@ -76,7 +77,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.0.0_165</version>
+            <version>${JDA.version}</version>
         </dependency>
 
         <!-- Utils -->
