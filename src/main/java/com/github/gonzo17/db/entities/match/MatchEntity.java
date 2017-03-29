@@ -37,4 +37,8 @@ public class MatchEntity {
     private List<TeamEntity> teams;
     @OneToOne(targetEntity = TimelineEntity.class, cascade = CascadeType.ALL)
     private TimelineEntity timeline;
+
+    /** Internal field to track for who we persisted the match. **/
+    @Setter
+    private long summonerId;
 }

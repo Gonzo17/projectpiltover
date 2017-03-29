@@ -86,6 +86,7 @@ public class ProjectPiltoverLogic {
                 }
                 MatchDetail matchDetail = api.getMatch(Region.EUW, matchId);
                 MatchEntity matchEntity = matchMapper.mapMatchDetailToMatchEntity(matchDetail);
+                matchEntity.setSummonerId(summonerId);
                 matchDbFacade.saveMatch(matchEntity);
             }
         } catch (RiotApiException e) {

@@ -63,6 +63,7 @@ public class MatchMapper {
                 .championId(participant.getChampionId())
                 .highestAchievedSeasonTier(participant.getHighestAchievedSeasonTier())
                 .masteries(participant.getMasteries().stream().map(this::toEntity).collect(Collectors.toList()))
+                .participantId(participant.getParticipantId())
                 .runes(runeList(participant))
                 .spell1Id(participant.getSpell1Id())
                 .spell2Id(participant.getSpell2Id())
