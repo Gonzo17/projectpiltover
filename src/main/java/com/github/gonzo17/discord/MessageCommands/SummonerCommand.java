@@ -5,6 +5,8 @@ import net.rithms.riot.api.RiotApi;
 import net.rithms.riot.api.RiotApiException;
 import net.rithms.riot.api.endpoints.league.dto.League;
 import net.rithms.riot.api.endpoints.league.dto.LeagueEntry;
+import net.rithms.riot.api.endpoints.stats.dto.PlayerStatsSummary;
+import net.rithms.riot.api.endpoints.stats.dto.PlayerStatsSummaryList;
 import net.rithms.riot.api.endpoints.summoner.dto.Summoner;
 import net.rithms.riot.constant.Region;
 
@@ -49,11 +51,13 @@ public class SummonerCommand implements MessageCommand {
     public void execute(MessageChannel channel) {
         String result = outputFormat;
 
-        String summonerName = message.substring("!rank".length()).trim();
+        String summonerName = message.substring(keyPhrase.length()).trim();
         String summonerLeague = "";
         String summonerDivision = "";
         String summonerLeaguePoints = "";
         String summonerWinLossRatio = "";
+        String amountOfPentakills = "";
+        String summonerId = "";
 
 //        Summoner summoner = piltoverLogic.getSummonerByName(Region.EUW, summonerName);
 //        summonerLeague = piltoverLogic.getLeagueBySummonerId (summoner.getId()).toString();
@@ -64,15 +68,24 @@ public class SummonerCommand implements MessageCommand {
 //        double amountOfWins = piltoverLogic.getAmountRankedGameWinsBySummonerId(summoner.getId());
 //        summonerWinLossRatio = String.valueOf(amountOfWins) + "/" + String.valueOf(piltoverLogic.getAmountRankedGameLossesBySummonerId(summoner.getId())) + " (" + percentage + "%)";
 
+        // TODO Replace API calls with calls to a SummonerLogic class
         try {
             Summoner summoner = api.getSummonerByName(Region.EUW, summonerName);
+            summonerId = String.valueOf(summoner.getId());
             League league = api.getLeagueEntryBySummoner(Region.EUW, summoner.getId()).get(0);
+            PlayerStatsSummaryList playerStatsSummaryList = api.getPlayerStatsSummary(Region.EUW, summoner.getId());
+            int pentaKills = 0;
+            for (PlayerStatsSummary playerStatsSummary :
+                    playerStatsSummaryList.getPlayerStatSummaries()) {
+                pentaKills += playerStatsSummary.getAggregatedStats().getTotalPentaKills();
+            }
 
             summonerLeague = league.getTier();
             LeagueEntry entry = league.getEntries().get(0);
             summonerDivision = entry.getDivision();
             summonerLeaguePoints = String.valueOf(entry.getLeaguePoints());
 
+            amountOfPentakills = String.valueOf(pentaKills);
             int amountOfWins = entry.getWins();
             int amountOfLosses = entry.getLosses();
             int amountOfGames = amountOfWins + amountOfLosses;
@@ -83,11 +96,14 @@ public class SummonerCommand implements MessageCommand {
             e.printStackTrace();
         }
 
+        // TODO This should be defined somewhere else (Map, UtilityClass)
         result = result.replaceAll("\\$summonerName\\b", summonerName);
         result = result.replaceAll("\\$summonerLeague\\b", summonerLeague);
         result = result.replaceAll("\\$summonerDivision\\b", summonerDivision);
         result = result.replaceAll("\\$summonerLeaguePoints\\b", summonerLeaguePoints);
         result = result.replaceAll("\\$summonerWinLossRatio\\b", summonerWinLossRatio);
+        result = result.replaceAll("\\$amountPenta\\b", amountOfPentakills);
+        result = result.replaceAll("\\$id\\b", summonerId);
 
         channel.sendMessage(result).queue();
     }
