@@ -3,6 +3,7 @@ package com.github.gonzo17.logic;
 
 import com.github.gonzo17.db.MatchDbFacade;
 import com.github.gonzo17.db.SummonerDbFacade;
+import com.github.gonzo17.db.SummonerDbImpl;
 import com.github.gonzo17.db.entities.match.MatchEntity;
 import com.github.gonzo17.db.entities.match.summoner.SummonerIdentityEntity;
 import com.github.gonzo17.discord.MessageListener;
@@ -19,6 +20,8 @@ import net.rithms.riot.api.endpoints.current_game.dto.CurrentGameInfo;
 import net.rithms.riot.api.endpoints.current_game.dto.CurrentGameParticipant;
 import net.rithms.riot.api.endpoints.game.dto.Game;
 import net.rithms.riot.api.endpoints.game.dto.RecentGames;
+import net.rithms.riot.api.endpoints.league.dto.League;
+import net.rithms.riot.api.endpoints.league.dto.LeagueEntry;
 import net.rithms.riot.api.endpoints.match.dto.MatchDetail;
 import net.rithms.riot.api.endpoints.summoner.dto.Summoner;
 import net.rithms.riot.constant.PlatformId;
@@ -45,7 +48,8 @@ public class ProjectPiltoverLogic {
     private MatchDbFacade matchDbFacade;
     @Autowired
     private SummonerDbFacade summonerDbFacade;
-
+    @Autowired
+    private SummonerDbImpl summonerDb;
     @Autowired
     private MatchMapper matchMapper;
     @Autowired
@@ -94,10 +98,6 @@ public class ProjectPiltoverLogic {
         }
     }
 
-    private String convertSummonerIdToName(Long summoner) {
-        return summonerDbFacade.getSummonerById(summoner).getSummonerName();
-    }
-
     public String checkForCurrentGame(Long summonerId) {
         try {
             CurrentGameInfo currentGameInfo = api.getCurrentGameInfo(PlatformId.EUW, summonerId);
@@ -111,15 +111,6 @@ public class ProjectPiltoverLogic {
             if (e.getErrorCode() != DATA_NOT_FOUND) {
                 e.printStackTrace();
             }
-        }
-        return null;
-    }
-
-    private String getChampionName(int championId) {
-        try {
-            return api.getDataChampion(Region.EUW, championId).getName();
-        } catch (RiotApiException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -150,4 +141,50 @@ public class ProjectPiltoverLogic {
     public List<Long> getSummonerIdsToUpdate() {
         return summonerDbFacade.getSummonersIdsToWatch();
     }
+
+    public Summoner getSummonerByName(Region euw, String summonerName) {
+        if (summonerDb.exists(summonerName)) {
+
+        }
+
+        return new Summoner();
+    }
+
+    public String getLeagueBySummonerId(long summonerId) {
+        return new League().getTier();
+    }
+
+    public String getDivisionBySummonerId(long summonerId) {
+        return new LeagueEntry().getDivision();
+    }
+
+    public String getLeaguePointsBySummonerId(long summonerId) {
+        return String.valueOf(new LeagueEntry().getLeaguePoints());
+    }
+
+    public int getAmountTotalRankedGamesBySummonerId(long summonerId) {
+        return (getAmountRankedGameLossesBySummonerId(summonerId) + getAmountRankedGameWinsBySummonerId(summonerId));
+    }
+
+    public int getAmountRankedGameWinsBySummonerId(long summonerId) {
+        return new LeagueEntry().getWins();
+    }
+
+    public int getAmountRankedGameLossesBySummonerId(long summonerId) {
+        return new LeagueEntry().getLosses();
+    }
+
+    private String convertSummonerIdToName(Long summoner) {
+        return summonerDbFacade.getSummonerById(summoner).getSummonerName();
+    }
+
+    private String getChampionName(int championId) {
+        try {
+            return api.getDataChampion(Region.EUW, championId).getName();
+        } catch (RiotApiException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
